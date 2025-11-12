@@ -19,18 +19,22 @@ public class CategoryController : ControllerBase
     [HttpGet("Index")]
     public async Task<ActionResult<IEnumerable<Category>>> GetAllCategories()
     {
-        return await _context.Categories.ToListAsync();
+        return await _context.Categories.Include(c => c.Products).ToListAsync();
     }
 
     // GET: api/Category/Details/5
     [HttpGet("Details/{id}")]
     public async Task<ActionResult<Category>> GetParticularCategory(int id)
     {
-        var category = await _context.Categories.FindAsync(id);
+        var category = await _context.Categories
+            .Include(c => c.Products)
+            .FirstOrDefaultAsync(c => c.CategoryId == id);
+
         if (category == null)
             return NotFound();
         return category;
     }
+
 
     // POST: api/Category/Create
     [HttpPost("Create")]
@@ -53,7 +57,7 @@ public class CategoryController : ControllerBase
         return NoContent();
     }
 
-    // DELETE: api/Category/Delete5
+    // DELETE: api/Category/Delete/5
     [HttpDelete("Delete/{id}")]
     public async Task<IActionResult> DeleteCategory(int id)
     {
