@@ -16,13 +16,14 @@ public class CategoryController : ControllerBase
 
     // GET: api/Category
     [HttpGet]
+    [HttpGet("Index")]
     public async Task<ActionResult<IEnumerable<Category>>> GetAllCategories()
     {
         return await _context.Categories.ToListAsync();
     }
 
-    // GET: api/Category/5
-    [HttpGet("{id}")]
+    // GET: api/Category/Details/5
+    [HttpGet("Details/{id}")]
     public async Task<ActionResult<Category>> GetParticularCategory(int id)
     {
         var category = await _context.Categories.FindAsync(id);
@@ -31,8 +32,8 @@ public class CategoryController : ControllerBase
         return category;
     }
 
-    // POST: api/Category
-    [HttpPost]
+    // POST: api/Category/Create
+    [HttpPost("Create")]
     public async Task<ActionResult<Category>> CreateCategory(Category category)
     {
         _context.Categories.Add(category);
@@ -40,8 +41,8 @@ public class CategoryController : ControllerBase
         return CreatedAtAction(nameof(GetParticularCategory), new { id = category.CategoryId }, category);
     }
 
-    // PUT: api/Category/5
-    [HttpPut("{id}")]
+    // PUT: api/Category/Update/5
+    [HttpPut("Update/{id}")]
     public async Task<IActionResult> UpdateCategory(int id, Category category)
     {
         if (id != category.CategoryId)
@@ -52,8 +53,8 @@ public class CategoryController : ControllerBase
         return NoContent();
     }
 
-    // DELETE: api/Category/5
-    [HttpDelete("{id}")]
+    // DELETE: api/Category/Delete5
+    [HttpDelete("Delete/{id}")]
     public async Task<IActionResult> DeleteCategory(int id)
     {
         var category = await _context.Categories.FindAsync(id);
