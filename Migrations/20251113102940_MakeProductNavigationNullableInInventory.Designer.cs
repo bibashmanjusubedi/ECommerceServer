@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ecomServer.DAL;
@@ -11,9 +12,11 @@ using ecomServer.DAL;
 namespace ecomServer.Migrations
 {
     [DbContext(typeof(ecomServerDbContext))]
-    partial class ecomServerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251113102940_MakeProductNavigationNullableInInventory")]
+    partial class MakeProductNavigationNullableInInventory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

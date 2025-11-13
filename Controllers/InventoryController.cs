@@ -16,32 +16,39 @@ public class InventoryController : ControllerBase
 
     // GET: api/Inventory
     [HttpGet]
+    [HttpGet("Index")]
     public async Task<ActionResult<IEnumerable<Inventory>>> GetAllInventories()
     {
-        return await _context.Inventories.ToListAsync();
+        return await _context.Inventories.Include(i => i.Product).ToListAsync();
     }
 
     // GET: api/Inventory/5
-    [HttpGet("{id}")]
+    [HttpGet("Details/{id}")]
     public async Task<ActionResult<Inventory>> GetParticularInventory(int id)
     {
-        var inventory = await _context.Inventories.FindAsync(id);
+        var inventory = await _context.Inventories
+        .Include(i => i.Product)  // Eagerly load related Product
+        .FirstOrDefaultAsync(i => i.InventoryId == id);
         if (inventory == null)
             return NotFound();
         return inventory;
     }
 
-    // POST: api/Inventory
-    [HttpPost]
+    // POST: api/Inventory/Create
+    [HttpPost("Create")]
     public async Task<ActionResult<Inventory>> CreateInventory(Inventory inventory)
     {
         _context.Inventories.Add(inventory);
         await _context.SaveChangesAsync();
+
+         // Load the related Product explicitly
+        await _context.Entry(inventory).Reference(i => i.Product).LoadAsync();
+        
         return CreatedAtAction(nameof(GetParticularInventory), new { id = inventory.InventoryId }, inventory);
     }
 
     // PUT: api/Inventory/5
-    [HttpPut("{id}")]
+    [HttpPut("Update/{id}")]
     public async Task<IActionResult> UpdateInventory(int id, Inventory inventory)
     {
         if (id != inventory.InventoryId)
@@ -53,7 +60,7 @@ public class InventoryController : ControllerBase
     }
 
     // DELETE: api/Inventory/5
-    [HttpDelete("{id}")]
+    [HttpDelete("Delete/{id}")]
     public async Task<IActionResult> DeleteInventory(int id)
     {
         var inventory = await _context.Inventories.FindAsync(id);
