@@ -64,10 +64,28 @@ public class ProductController : ControllerBase
 
 
     [HttpPut("Update/{id}")]
-    public async Task<IActionResult> UpdateProduct(int id, Product product)
+    public async Task<IActionResult> UpdateProduct(int id, [FromForm] ProductUpdateDto dto)
     {
-        if (id != product.ProductId)
-            return BadRequest();
+        var product = await _context.Products.FindAsync(id);
+        if (product == null)
+        {
+            return NotFound();
+        }
+
+        product.Name = dto.Name;
+        product.SKU = dto.SKU;
+        product.Price = dto.Price;
+        product.CategoryId = dto.CategoryId;
+
+        if (dto.ImageFile != null)
+        {
+            using (var ms = new MemoryStream())
+            {
+                await dto.ImageFile.CopyToAsync(ms);
+                product.ImageData = ms.ToArray();
+            }
+            product.ImageMimeType = dto.ImageFile.ContentType;
+        }
 
         _context.Entry(product).State = EntityState.Modified;
         await _context.SaveChangesAsync();
