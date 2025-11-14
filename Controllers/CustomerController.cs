@@ -16,6 +16,7 @@ public class CustomerController : ControllerBase
 
     // GET: api/Customer
     [HttpGet]
+    [HttpGet("Index")]
     public async Task<ActionResult<IEnumerable<Customer>>> GetAllCustomers()
     {
         return await _context.Customers.ToListAsync();
@@ -23,7 +24,7 @@ public class CustomerController : ControllerBase
 
 
     // api/Customer/5
-    [HttpGet("{id}")]
+    [HttpGet("Details/{id}")]
     public async Task<ActionResult<Customer>> GetParticularCustomer(int id)
     {
         var customer = await _context.Customers.FindAsync(id);
@@ -32,8 +33,8 @@ public class CustomerController : ControllerBase
         return customer;
     }
 
-    // POST: api/Customer
-    [HttpPost]
+    // POST: api/Customer/Create
+    [HttpPost("Create")]
     public async Task<ActionResult<Customer>> CreateCustomer(Customer customer)
     {
         _context.Customers.Add(customer);
@@ -41,7 +42,7 @@ public class CustomerController : ControllerBase
         return CreatedAtAction(nameof(GetParticularCustomer), new {id = customer.CustomerId}, customer);
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("Update/{id}")]
     public async Task<IActionResult> UpdateCustomer(int id,Customer customer)
     {
         if (id != customer.CustomerId)
@@ -52,7 +53,7 @@ public class CustomerController : ControllerBase
         return NoContent();
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("Delete/{id}")]
     public async Task<IActionResult> DeleteCustomer(int id)
     {
         var customer = await _context.Customers.FindAsync(id);
