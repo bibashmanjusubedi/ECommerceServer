@@ -2,6 +2,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ecomServer.DAL;
 using ecomServer.Models;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using ecomServer.DTOs;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -16,45 +20,89 @@ public class OrderItemController : ControllerBase
 
     // GET: api/OrderItem
     [HttpGet]
+    [HttpGet("Index")]
     public async Task<ActionResult<IEnumerable<OrderItem>>> GetAllOrderItems()
     {
-        return await _context.OrderItems.ToListAsync();
+        var orderItems = await _context.OrderItems.
+            Include(oi => oi.Order).
+            Include(oi => oi.Product).
+            ToListAsync();
+
+        return orderItems;
     }
 
     // GET: api/OrderItem/5
-    [HttpGet("{id}")]
+    [HttpGet("Details/{id}")]
     public async Task<ActionResult<OrderItem>> GetParticularOrderItem(int id)
     {
-        var orderItem = await _context.OrderItems.FindAsync(id);
+        var orderItem = await _context.OrderItems
+            .Include(oi => oi.Order)
+            .Include(oi => oi.Product)
+            .FirstOrDefaultAsync(oi => oi.OrderItemId == id);
         if (orderItem == null)
             return NotFound();
         return orderItem;
     }
 
-    // POST: api/OrderItem
-    [HttpPost]
-    public async Task<ActionResult<OrderItem>> CreateOrderItem(OrderItem orderItem)
+    // POST: api/OrderItem/Create
+    [HttpPost("Create")]
+    public async Task<ActionResult<OrderItem>> CreateOrderItem(OrderItemCreateDto dto)
     {
+        var orderItem = new OrderItem
+        {
+            OrderId = dto.OrderId,
+            ProductId = dto.ProductId,
+            Quantity = dto.Quantity,
+            UnitPrice = dto.UnitPrice
+        };
+
         _context.OrderItems.Add(orderItem);
         await _context.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetParticularOrderItem), new { id = orderItem.OrderItemId }, orderItem);
+
+        var createdOrderItem = await _context.OrderItems
+            .Include(oi => oi.Order)
+            .Include(oi => oi.Product)
+            .FirstOrDefaultAsync(oi => oi.OrderItemId == orderItem.OrderItemId);
+
+        return CreatedAtAction(nameof(GetParticularOrderItem), new { id = orderItem.OrderItemId }, createdOrderItem);
     }
 
-    // PUT: api/OrderItem/5
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateOrderItem(int id, OrderItem orderItem)
+    // PUT: api/OrderItem/Update/5
+    [HttpPut("Update/{id}")]
+    public async Task<IActionResult> UpdateOrderItem(int id, OrderItemUpdateDto dto)
     {
-        if (id != orderItem.OrderItemId)
+        if (id != dto.OrderItemId)
             return BadRequest();
 
-        _context.Entry(orderItem).State = EntityState.Modified;
+        var orderItem = await _context.OrderItems.FindAsync(id);
+        if (orderItem == null)
+            return NotFound();
+
+        // Update scalar properties from DTO
+        orderItem.OrderId = dto.OrderId;
+        orderItem.ProductId = dto.ProductId;
+        orderItem.Quantity = dto.Quantity;
+        orderItem.UnitPrice = dto.UnitPrice;
+
+        // Save changes
         await _context.SaveChangesAsync();
 
+        // Load related entities for internal use (optional)
+        var updatedOrderItem = await _context.OrderItems
+            .Include(oi => oi.Order)
+            .Include(oi => oi.Product)
+            .FirstOrDefaultAsync(oi => oi.OrderItemId == id);
+
+        if (updatedOrderItem == null)
+            return NotFound();
+
+        // Return NoContent() to client
         return NoContent();
     }
 
+
     // DELETE: api/OrderItem/5
-    [HttpDelete("{id}")]
+    [HttpDelete("Delete/{id}")]
     public async Task<IActionResult> DeleteOrderItem(int id)
     {
         var orderItem = await _context.OrderItems.FindAsync(id);
