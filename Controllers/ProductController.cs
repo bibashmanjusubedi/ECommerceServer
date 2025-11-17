@@ -4,17 +4,31 @@ using ecomServer.DAL;
 using ecomServer.Models;
 using ecomServer.DTOs;
 
+/// <summary>
+/// Controller for managing products in the e-commerce system.
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class ProductController : ControllerBase
 {
+    /// <summary>
+    /// The database context for accessing products, categories, and related entities.
+    /// </summary>
     private readonly ecomServerDbContext _context;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ProductController"/> class.
+    /// </summary>
+    /// <param name="context">The database context to be used for data access.</param
     public ProductController(ecomServerDbContext context)
     {
         _context = context;
     }
 
+    /// <summary>
+    /// Retrieves a list of all products.
+    /// </summary>
+    /// <returns>A list of products.</returns>
     [HttpGet]
     [HttpGet("Index")]
     public async Task<ActionResult<IEnumerable<Product>>> GetAllProducts()
@@ -24,6 +38,11 @@ public class ProductController : ControllerBase
             .ToListAsync();
     }
 
+    /// <summary>
+    /// Retrieves a product by its unique identifier.
+    /// </summary>
+    /// <param name="id">The product ID.</param>
+    /// <returns>The requested product details.</returns>
     [HttpGet("Details/{id}")]
     public async Task<ActionResult<Product>> GetParticularProduct(int id)
     {
@@ -35,6 +54,11 @@ public class ProductController : ControllerBase
         return product;
     }
 
+    /// <summary>
+    /// Creates a new product.
+    /// </summary>
+    /// <param name="productDto">The product information.</param>
+    /// <returns>The created product.</returns>
     [HttpPost("Create")]
     public async Task<ActionResult<Product>> CreateProduct([FromForm] ProductCreateDto dto)
     {
@@ -66,7 +90,16 @@ public class ProductController : ControllerBase
         return CreatedAtAction(nameof(GetParticularProduct), new { id = product.ProductId }, product);
     }
 
-
+    /// <summary>
+    /// Updates an existing product by its ID.
+    /// </summary>
+    /// <returns>
+    /// Returns <see cref="NoContentResult"/> if the update is successful,
+    /// </returns>
+    /// <remarks>
+    /// This endpoint updates the product’s name, SKU, price, category, and optionally the image.
+    /// The product is identified by the given <paramref name="id"/>.
+    /// </remarks>
     [HttpPut("Update/{id}")]
     public async Task<IActionResult> UpdateProduct(int id, [FromForm] ProductUpdateDto dto)
     {
@@ -96,6 +129,16 @@ public class ProductController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Deletes a product by its unique identifier.
+    /// </summary>
+    /// <param name="id">The ID of the product to delete.</param>
+    /// <returns>
+    /// Returns <see cref="NoContentResult"/> if the product is successfully deleted,
+    /// </returns>
+    /// <remarks>
+    /// This endpoint permanently removes the product with the specified <paramref name="id"/> from the database.
+    /// </remarks>
     [HttpDelete("Delete/{id}")]
     public async Task<IActionResult> DeleteProduct(int id)
     {
